@@ -1,0 +1,249 @@
+Модуль № 1
+_______________________________________________________
+Настройка ISP
+root / toor
+hostnamectl hostname isp; exec bash
+
+cd /etc/net/ifaces/ cp -r ens18/ ens19 cd ens19
+vim options
+
+BOOTPROTO=static TYPE=eth DISABLED=no ONBOOT=yes
+esc -> shift+z+z
+cd ens19
+echo "172.16.4.1/28" >> ipv4address cd ..
+cp -r ens19/ ens20
+echo "172.16.5.1/28" > ens20/ipv4address systemctl restart network
+ip -c -br a
+_______________________________________________________
+
+_______________________________________________________
+Настройка статического IP адреса на HQ-SRV
+root / toor
+hostnamectl hostname hq-srv.au-team.irpo; exec bash
+
+[root@noname ~]# vim /etc/net/ifaces/ens18/options
+
+BOOTPROTO=static
+TYPE=eth CONFIG_WIRELESS=no
+SYSTEMD_BOOTPROTO=static
+CONFIG_IPV4=yes
+DISABLED=no
+NM_CONTROLLED=no
+SYSTEMD_CONTROLLED=no
+
+echo "192.168.1.62/26" > /etc/net/ifaces/ens18/ipv4address
+echo "default via 192.168.1.1" > /etc/net/ifaces/ens18/ipv4route
+echo nameserver 8.8.8.8 > /etc/resolv.conf
+systemctl restart network
+
+#ip -c -br a
+#ip route show
+#ip a show
+_______________________________________________________
+
+_______________________________________________________
+HQ-CLI:
+hostnamectl hostname hq-cli.au-team.irpo; exec bash
+_______________________________________________________
+
+_______________________________________________________
+Настройка статического IP адреса на BR-SRV
+root / toor
+hostnamectl hostname br-srv.au-team.irpo; exec bash
+
+[root@noname ~]# vim /etc/net/ifaces/ens18/options
+
+BOOTPROTO=static
+TYPE=eth
+CONFIG_WIRELESS=no
+SYSTEMD_BOOTPROTO=static
+CONFIG_IPV4=yes
+DISABLED=no
+NM_CONTROLLED=no
+SYSTEMD_CONTROLLED=no
+ 
+echo "192.168.0.30/27" > /etc/net/ifaces/ens18/ipv4address
+echo "default via 192.168.0.1" > /etc/net/ifaces/ens18/ipv4route
+echo nameserver 8.8.8.8 > /etc/resolv.conf
+systemctl restart network #ip -c -br a
+#ip route show	- шлюз
+#ip a show
+_______________________________________________________
+
+Настройка сетевой инфраструктуры
+1. Произведите базовую настройку устройств:
+
+Таблица 1 – IP планирование
+Имя
+устройства	IPv4 адрес	Шлюз по умолчанию
+ISP	10.0.55.15/24	-
+	172.16.4.1/28	-
+	172.16.5.1/28	-
+HQ-RTR	172.16.4.14/28	-
+	192.168.1.1/26	-
+	192.168.1.65/28	-
+	192.168.1.81/29	-
+	172.16.0.1/30	-
+HQ-SRV	192.168.1.62/26	192.168.1.1
+HQ-CLI	DHCP	192.168.1.65
+BR-RTR	172.16.5.14/28	-
+	192.168.0.1/27	-
+	172.16.0.2/30	-
+BR-SVR	192.168.0.30/27	192.168.0.1
+
+Таблица 2 – Таблица доменных имен
+Устройство	Запись	Тип
+HQ-RTR	hq-rtr.au-team.irpo	A,PTR
+BR-RTR	br-rtr.au-team.irpo	A
+HQ-SRV	hq-srv.au-team.irpo	A,PTR
+HQ-CLI	hq-cli.au-team.irpo	A,PTR
+BR-SRV	br-srv.au-team.irpo	A
+ISP TO HQ-SRV	moodle.au-team.irpo	A
+ISP TO BR-SRV	wiki.au-team.irpo	A
+
+Выполняем	вход	из	под	пользователя	по	умолчанию	(admin/admin):
+
+HQ-RTR:
+_______________________________________________________
+hostname HQ-RTR 
+ip domain-name au-team.irpo
+interface int0
+description "to isp" 
+ip address 172.16.4.14/28
+port te0
+service-instance te0/int0
+encapsulation untagged
+interface int0
+connect port te0 service-instance te0/int0
+interface int1
+description "to hq-srv" 
+ip address 192.168.1.1/26 
+port te1
+service-instance te1/int1
+encapsulation dot1q 100 exact 
+rewrite pop 1
+interface int1
+connect port te1 service-instance te1/int1
+interface int2
+description "to hq-cli"
+ip address 192.168.1.65/28 
+port te1
+service-instance te1/int2
+encapsulation dot1q 200 exact 
+rewrite pop 1
+interface int2
+connect port te1 service-instance te1/int2
+interface int3
+description "to management"
+ip address 192.168.1.81/29
+port te1
+service-instance te1/int3
+encapsulation dot1q 999 exact
+rewrite pop 1
+interface int3
+connect port te1 service-instance te1/int3
+ip route 0.0.0.0/0 172.16.4.1
+username net_admin 
+password P@$$word
+role admin
+int tunnel.0
+ip address 172.16.0.1/30 
+ip mtu 1400
+ip tunnel 172.16.4.14 172.16.5.14 mode gre
+router ospf 1
+router-id 1.1.1.1
+network 172.16.0.0/30 area 0
+network 192.168.1.0/26 area 0 
+network 192.168.1.64/28 area 0 
+network 192.168.1.80/29 area 0 
+passive-interface default 
+no passive-interface tunnel.0
+interface tunnel.0
+ip ospf authentication message-digest 
+ip ospf message-digest-key 1 md5 P@ssw0rd
+int int1 
+ip nat inside
+int int2
+ip nat inside
+int int3
+ip nat inside
+int int0
+ip nat outside
+ip nat pool NAT_POOL 192.168.1.1-192.168.1.62,192.168.1.65-192.168.1.78,192.168.1.81-192.168.1.87
+ip nat source dynamic inside-to-outside pool NAT_POOL overload interface int0
+ip pool cli_pool 1
+range 192.168.1.66-192.168.1.78
+dhcp-server 1
+pool cli_pool 1
+mask 255.255.255.240
+gateway 192.168.1.65
+dns 192.168.1.62
+domain-name au-team.irpo 
+interface int2
+dhcp-server 1
+ntp server 172.16.4.1
+security none
+ip nat source static tcp 192.168.1.62 80 172.16.4.14 80
+ip nat source static tcp 192.168.1.62 2024 172.16.4.14 2024
+write memory
+_______________________________________________________
+
+BR-RTR:
+_______________________________________________________
+hostname BR-RTR 
+ip domain-name au-team.irpo
+interface int0
+description "to isp"
+ip address 172.16.5.14/28
+interface int1
+description "to br-srv" 
+ip address 192.168.0.1/27
+port te0
+service-instance te0/int0
+encapsulation untagged
+port te1
+service-instance te1/int1 
+encapsulation untagged
+interface int0
+connect port te0 service-instance te0/int0 
+interface int1
+connect port te1 service-instance te1/int1 
+ip route 0.0.0.0/0 172.16.5.1
+username net_admin 
+password P@$$word
+role admin
+int tunnel.0
+ip address 172.16.0.2/30
+ip mtu 1400
+ip tunnel 172.16.5.14 172.16.4.14 mode gre
+router ospf 1
+router-id 2.2.2.2
+network 172.16.0.0/30 area 0 
+network 192.168.0.0/27 area 0 
+passive-interface default
+no passive-interface tunnel.0 
+interface tunnel.0
+ip ospf authentication message-digest
+ip ospf message-digest-key 1 md5 P@ssw0rd
+int int1
+ip nat inside
+int int0
+ip nat outside
+ip nat pool NAT_POOL 192.168.0.1-192.168.0.30
+ip nat source dynamic inside-to-outside pool NAT_POOL overload interface int0
+ntp server 172.16.5.1
+security none 
+ip nat source static tcp 192.168.0.30 8080 172.16.5.14 80
+ip nat source static tcp 192.168.0.30 2024 172.16.5.14 2024
+write memory
+_______________________________________________________
+
+СКРИНЫ: сами, айпи, dhcp, gre, ospf, nat, ntp
+Проверка:
+#show port
+#show port brief
+#show interface
+#show service-instance brief
+#show ip interface br
+#ping 8.8.8.8
+#show users localdb
