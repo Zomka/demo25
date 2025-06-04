@@ -4,6 +4,7 @@
 ______
 cd ~/
 rm -rf demo25
+rm -rf /tmp/ym.txt
 history -c 
 ______
 Модуль № 1
