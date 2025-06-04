@@ -1,19 +1,19 @@
+Работа с VIM:
+Написать что-то = esc, i
+Сохранить = esc, shift + zz
+______
+cd ~/
+rm -rf demo25
+history -c 
+______
 Модуль № 1
 _______________________________________________________
 Настройка ISP
 root / toor
 hostnamectl hostname isp; exec bash
 
-cd /etc/net/ifaces/ cp -r ens18/ ens19 cd ens19
-vim options
-
-BOOTPROTO=static TYPE=eth DISABLED=no ONBOOT=yes
-esc -> shift+z+z
-cd ens19
-echo "172.16.4.1/28" >> ipv4address cd ..
-cp -r ens19/ ens20
-echo "172.16.5.1/28" > ens20/ipv4address systemctl restart network
-ip -c -br a
+vim /etc/net/ifaces/ens18/options
+DISABLED=no
 _______________________________________________________
 
 _______________________________________________________
@@ -65,7 +65,8 @@ SYSTEMD_CONTROLLED=no
 echo "192.168.0.30/27" > /etc/net/ifaces/ens18/ipv4address
 echo "default via 192.168.0.1" > /etc/net/ifaces/ens18/ipv4route
 echo nameserver 8.8.8.8 > /etc/resolv.conf
-systemctl restart network #ip -c -br a
+systemctl restart network
+#ip -c -br a
 #ip route show	- шлюз
 #ip a show
 _______________________________________________________
