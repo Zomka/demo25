@@ -120,7 +120,7 @@ description "to hq-srv"
 ip address 192.168.1.1/26 
 port te1
 service-instance te1/int1
-encapsulation dot1q 100 exact 
+encapsulation dot1q 15 exact 
 rewrite pop 1
 interface int1
 connect port te1 service-instance te1/int1
@@ -129,7 +129,7 @@ description "to hq-cli"
 ip address 192.168.1.65/28 
 port te1
 service-instance te1/int2
-encapsulation dot1q 200 exact 
+encapsulation dot1q 25 exact 
 rewrite pop 1
 interface int2
 connect port te1 service-instance te1/int2
@@ -138,7 +138,7 @@ description "to management"
 ip address 192.168.1.81/29
 port te1
 service-instance te1/int3
-encapsulation dot1q 999 exact
+encapsulation dot1q 99 exact
 rewrite pop 1
 interface int3
 connect port te1 service-instance te1/int3
@@ -184,7 +184,7 @@ dhcp-server 1
 ntp server 172.16.4.1
 security none
 ip nat source static tcp 192.168.1.62 80 172.16.4.14 80
-ip nat source static tcp 192.168.1.62 2024 172.16.4.14 2024
+ip nat source static tcp 192.168.1.62 3010 172.16.4.14 3010
 write memory
 _______________________________________________________
 
@@ -233,8 +233,8 @@ ip nat pool NAT_POOL 192.168.0.1-192.168.0.30
 ip nat source dynamic inside-to-outside pool NAT_POOL overload interface int0
 ntp server 172.16.5.1
 security none 
-ip nat source static tcp 192.168.0.30 8080 172.16.5.14 80
-ip nat source static tcp 192.168.0.30 2024 172.16.5.14 2024
+ip nat source static tcp 192.168.0.30 8086 172.16.5.14 80
+ip nat source static tcp 192.168.0.30 3010 172.16.5.14 3010
 write memory
 _______________________________________________________
 
