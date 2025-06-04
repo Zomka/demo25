@@ -152,7 +152,7 @@ apt-get update && apt-get install -y chrony
 cat <<EOF > /etc/chrony.conf
 # Use public server from the pool
 # Please consider joining the pool
-server 172.16.4.1
+server 172.16.40.1
 EOF
  set -o history
 systemctl restart chronyd
@@ -172,7 +172,7 @@ admx-msi-setup
 apt-get update && apt-get install -y nfs-{utils,clients}
 mkdir /mnt/nfs 
 chmod 777 /mnt/nfs 
-echo "192.168.1.62:/raid1/nfs    /mnt/nfs    nfs    defaults    0    0" >> /etc/fstab
+echo "192.168.0.30:/raid1/nfs    /mnt/nfs    nfs    defaults    0    0" >> /etc/fstab
 mount -av
 df -h
 apt-get update && apt-get install -y yandex-browser-stable
@@ -180,19 +180,19 @@ set +o history
 touch /mnt/nfs/Proverka
 cat <<EOF > /etc/resolv.conf
 search au-team.irpo
-nameserver 192.168.0.30
+nameserver 192.168.0.142
 EOF
  set +o history
 cat <<EOF > /tmp/test1.txt
 Это после настройки медиавики чтобы скинуть php на br-srv
-scp -P 3010 /home/user/Downloads/LocalSettings.php sshuser@192.168.0.30:/home/sshuser/
+scp -P 3010 /home/user/Downloads/LocalSettings.php sshuser@192.168.0.142:/home/sshuser/
 br-srv# cp /home/sshuser/LocalSettings.php /root/docker
 EOF
 cat /tmp/test1.txt
 set -o history
 cat <<EOF > /tmp/ym.txt
 ПОМЕНЯЙТЕ В RESOLV.CONF 
-первый nameserver 192.168.0.30
+первый nameserver 192.168.0.142
 "Что нужно заскринить:
 1)hostname;
 2)ip addres (dhcp);
@@ -205,3 +205,4 @@ cat <<EOF > /tmp/ym.txt
 rm -rf /tmp/help.txt
 gpupdate -f НЕ ЗАБЫТЬ 
 EOF
+history -c

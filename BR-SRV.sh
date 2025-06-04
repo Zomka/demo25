@@ -157,12 +157,12 @@ apt-get install -y chrony
  cat <<EOF > /etc/chrony.conf
 # Use public server from the pool
 # Please consider joining the pool
-server 172.16.5.1
+server 172.16.50.1
 EOF
  set -o history
 systemctl restart chronyd
 cat <<EOF >> /etc/resolv.conf
-nameserver 192.168.1.62
+nameserver 192.168.0.30
 nameserver 8.8.8.8
 EOF
 apt-get update && apt-get install -y task-samba-dc bind-utils
@@ -181,7 +181,7 @@ systemctl restart samba
 samba-tool domain info 127.0.0.1
 echo "search au-team.irpo" > /etc/net/ifaces/ens18/resolv.conf
 echo "nameserver 127.0.0.1" >> /etc/net/ifaces/ens18/resolv.conf
-echo "nameserver 192.168.1.62" >> /etc/net/ifaces/ens18/resolv.conf
+echo "nameserver 192.168.0.30" >> /etc/net/ifaces/ens18/resolv.conf
 systemctl restart network
 samba-tool group add hq
 for i in {1..5}; 
@@ -195,10 +195,10 @@ apt-get install -y ansible sshpass
 sed '14i\ inventory = /etc/ansible/hosts' /etc/ansible/ansible.cfg
 sed '15i\ host_key_checking = False' /etc/ansible/ansible.cfg
 cat <<EOF > /etc/ansible/hosts
-HQ-RTR ansible_host=192.168.1.1 ansible_user=net_admin ansible_password=P@ssword ansible_connection=network_cli ansible_network_os=ios
-BR-RTR ansible_host=192.168.0.1 ansible_user=net_admin  ansible_password=P@ssword ansible_connection=network_cli ansible_network_os=ios
-HQ-SRV ansible_host=192.168.1.62 ansible_user=sshuser ansible_password=P@ssw0rd ansible_ssh_port=3010
-HQ-CLI ansible_host=192.168.1.66 ansible_user=user ansible_password=resu ansible_ssh_port=3010
+HQ-RTR ansible_host=192.168.0.1 ansible_user=net_admin ansible_password=P@ssword ansible_connection=network_cli ansible_network_os=ios
+BR-RTR ansible_host=192.168.0.129 ansible_user=net_admin  ansible_password=P@ssword ansible_connection=network_cli ansible_network_os=ios
+HQ-SRV ansible_host=192.168.0.30 ansible_user=sshuser ansible_password=P@ssw0rd ansible_ssh_port=3010
+HQ-CLI ansible_host=192.168.0.66 ansible_user=user ansible_password=resu ansible_ssh_port=3010
 
 [all:vars]
 ansible_python_interpreter=/usr/bin/python3
@@ -255,3 +255,4 @@ echo "Что нужно заскринить: 1)hostname;
 rm -rf /tmp/ym.txt
 set -o history" 
 EOF
+history -c

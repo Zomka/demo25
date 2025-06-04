@@ -165,24 +165,24 @@ cat <<EOF > /etc/dnsmasq.conf
 no-resolv
 no-poll
 no-hosts
-listen-address=192.168.1.62
+listen-address=192.168.0.30
 server=77.88.8.8
 server=8.8.8.8
 cache-size=1000
 all-servers
 no-negcache
-host-record=hq-rtr.au-team.irpo,192.168.1.1
-host-record=hq-srv.au-team.irpo,192.168.1.62
-host-record=hq-cli.au-team.irpo,192.168.1.66
-address=/br-rtr.au-team.irpo/192.168.0.1
-address=/br-srv.au-team.irpo/192.168.0.30
-host-record=moodle.au-team.irpo,172.16.4.1
-host-record=wiki.au-team.irpo,172.16.5.1
+host-record=hq-rtr.au-team.irpo,192.168.0.1
+host-record=hq-srv.au-team.irpo,192.168.0.30
+host-record=hq-cli.au-team.irpo,192.168.0.66
+address=/br-rtr.au-team.irpo/192.168.0.129
+address=/br-srv.au-team.irpo/192.168.0.142
+host-record=moodle.au-team.irpo,172.16.40.1
+host-record=wiki.au-team.irpo,172.16.50.1
 EOF
 cat <<EOF > /etc/chrony.conf
 # Use public server from the pool
 # Please consider joining the pool
-server 172.16.4.1
+server 172.16.40.1
 EOF
  set -o history
 systemctl restart dnsmasq
@@ -197,7 +197,7 @@ mount -av
 apt-get install -y nfs-{server,utils}
 mkdir /raid1/nfs
 chmod 777 /raid1/nfs
-echo "/raid1/nfs 192.168.1.64/28(rw,no_root_squash)" >> /etc/exports
+echo "/raid1/nfs 192.168.0.64/26(rw,no_root_squash)" >> /etc/exports
 exportfs -arv
 systemctl enable --now nfs-server
 apt-get install -y moodle moodle-apache2
@@ -228,3 +228,4 @@ systemctl enable --now httpd2
 rm -rf /tmp/help.txt
 set -o history" 
 EOF 
+history -c

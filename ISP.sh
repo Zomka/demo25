@@ -16,13 +16,13 @@ mkdir /etc/net/ifaces/ens20
 echo "TYPE=eth" > /etc/net/ifaces/ens19/options
 echo "BOOTPROTO=static" >> /etc/net/ifaces/ens19/options
 cp /etc/net/ifaces/ens19/options /etc/net/ifaces/ens20/options
-echo "172.16.4.1/28" > /etc/net/ifaces/ens19/ipv4address
-echo "172.16.5.1/28" > /etc/net/ifaces/ens20/ipv4address
+echo "172.16.40.1/28" > /etc/net/ifaces/ens19/ipv4address
+echo "172.16.50.1/28" > /etc/net/ifaces/ens20/ipv4address
 sed -i 's/net.ipv4.ip_forward = 0/net.ipv4.ip_forward = 1/g' /etc/net/sysctl.conf
 systemctl restart network
 apt-get update && apt-get install -y iptables
-iptables -A POSTROUTING -t nat -s 172.16.4.0/28 -o ens18 -j MASQUERADE
-iptables -A POSTROUTING -t nat -s 172.16.5.0/28 -o ens18 -j MASQUERADE
+iptables -A POSTROUTING -t nat -s 172.16.40.0/28 -o ens18 -j MASQUERADE
+iptables -A POSTROUTING -t nat -s 172.16.50.0/28 -o ens18 -j MASQUERADE
 iptables -t nat -L
 iptables-save >> /etc/sysconfig/iptables
 systemctl enable --now iptables
@@ -34,7 +34,7 @@ server {
     listen 80;
     server_name moodle.au-team.irpo;
     location / {
-        proxy_pass http://172.16.4.14/moodle/;
+        proxy_pass http://172.16.40.14/moodle/;
     }
 }
 
@@ -42,7 +42,7 @@ server {
     listen 80;
     server_name wiki.au-team.irpo;
     location / {
-        proxy_pass http://172.16.5.14;
+        proxy_pass http://172.16.50.14;
     }
 }
 EOF
@@ -77,4 +77,4 @@ cat <<EOF > /tmp/ym.txt
 rm -rf /tmp/help.txt
 set -o history" 
 EOF
-
+history -c
